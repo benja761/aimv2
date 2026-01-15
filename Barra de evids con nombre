@@ -1,0 +1,108 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local function setupESP(player)
+	if player == LocalPlayer then return end
+
+	local function onCharacter(character)
+		if character:FindFirstChild("ESP_TOP") then character.ESP_TOP:Destroy() end
+		if character:FindFirstChild("ESP_FOOT") then character.ESP_FOOT:Destroy() end
+
+		local humanoid = character:WaitForChild("Humanoid")
+		local root = character:WaitForChild("HumanoidRootPart")
+
+		humanoid.MaxHealth = 100
+		humanoid.Health = math.clamp(humanoid.Health, 0, 100)
+
+		-- ðŸ”¼ NOMBRE ARRIBA
+		local topAttach = Instance.new("Attachment")
+		topAttach.Position = Vector3.new(0, 20, 0)
+		topAttach.Parent = root
+
+		local topGui = Instance.new("BillboardGui")
+		topGui.Name = "ESP_TOP"
+		topGui.Adornee = topAttach
+		topGui.Size = UDim2.new(18,0,2.5,0)
+		topGui.AlwaysOnTop = true
+		topGui.MaxDistance = math.huge
+		topGui.LightInfluence = 0
+		topGui.Parent = character
+
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Size = UDim2.new(1,0,1,0)
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.TextSize = 20
+		nameLabel.Font = Enum.Font.GothamBold
+		nameLabel.TextColor3 = Color3.new(1,1,1)
+		nameLabel.TextStrokeColor3 = Color3.new(0,0,0)
+		nameLabel.TextStrokeTransparency = 0
+		nameLabel.TextXAlignment = Enum.TextXAlignment.Center
+		nameLabel.TextYAlignment = Enum.TextYAlignment.Center
+		nameLabel.Parent = topGui
+
+		-- ðŸ”½ BARRA DE VIDA ABAJO
+		local footAttach = Instance.new("Attachment")
+		footAttach.Position = Vector3.new(0, -4, 0)
+		footAttach.Parent = root
+
+		local footGui = Instance.new("BillboardGui")
+		footGui.Name = "ESP_FOOT"
+		footGui.Adornee = footAttach
+		footGui.Size = UDim2.new(6,0,1.1,0)
+		footGui.AlwaysOnTop = true
+		footGui.MaxDistance = math.huge
+		footGui.LightInfluence = 0
+		footGui.Parent = character
+
+		local footScale = Instance.new("UIScale")
+		footScale.Scale = 1.6
+		footScale.Parent = footGui
+
+		local bg = Instance.new("Frame")
+		bg.Size = UDim2.new(1,0,1,0)
+		bg.BackgroundColor3 = Color3.fromRGB(20,20,20)
+		bg.BorderSizePixel = 0
+		bg.Parent = footGui
+
+		local bar = Instance.new("Frame")
+		bar.Size = UDim2.new(1,0,1,0)
+		bar.BackgroundColor3 = Color3.fromRGB(0,255,0)
+		bar.BorderSizePixel = 0
+		bar.Parent = bg
+
+		-- ðŸ”¢ NÃšMERO MÃS CHICO
+		local hpText = Instance.new("TextLabel")
+		hpText.Size = UDim2.new(1,0,1,0)
+		hpText.BackgroundTransparency = 1
+		hpText.TextSize = 14 -- ðŸ‘ˆ MÃS CHICO (ANTES 20)
+		hpText.Font = Enum.Font.GothamBold
+		hpText.TextColor3 = Color3.new(1,1,1)
+		hpText.TextStrokeColor3 = Color3.new(0,0,0)
+		hpText.TextStrokeTransparency = 0
+		hpText.TextXAlignment = Enum.TextXAlignment.Center
+		hpText.TextYAlignment = Enum.TextYAlignment.Center
+		hpText.Parent = bg
+
+		local function update()
+			local hp = math.clamp(humanoid.Health, 0, humanoid.MaxHealth)
+			bar.Size = UDim2.new(hp / humanoid.MaxHealth, 0, 1, 0)
+			hpText.Text = tostring(math.floor(hp))
+			nameLabel.Text = player.Name
+		end
+
+		update()
+		humanoid.HealthChanged:Connect(update)
+	end
+
+	player.CharacterAdded:Connect(onCharacter)
+	if player.Character then
+		onCharacter(player.Character)
+	end
+end
+
+for _, p in ipairs(Players:GetPlayers()) do
+	setupESP(p)
+end
+Players.PlayerAdded:Connect(setupESP)
